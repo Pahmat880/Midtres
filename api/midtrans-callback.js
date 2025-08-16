@@ -1,3 +1,5 @@
+// api/midtrans-callback.js
+
 const midtransClient = require('midtrans-client');
 require('dotenv').config();
 
@@ -13,7 +15,7 @@ export default async function handler(req, res) {
 
     try {
         console.log('--- Menerima Webhook ---');
-        console.log('Request Body:', req.body); // Log isi body yang diterima
+        console.log('Request Body:', req.body);
 
         if (!req.body || Object.keys(req.body).length === 0) {
             console.error('Webhook payload is empty or undefined.');
@@ -23,13 +25,16 @@ export default async function handler(req, res) {
         const statusResponse = await core.notifications.handle(req.body);
         
         console.log('Webhook berhasil diproses.');
-        console.log('Status Response:', statusResponse);
+        console.log('Status Transaksi:', statusResponse.transaction_status);
         
+        // --- Perbaikan di sini ---
+        // Midtrans mengharapkan respons status 200 dengan body "OK"
         res.status(200).send('OK');
 
     } catch (e) {
-        console.error('Error saat memproses notifikasi:', e.message);
-        console.error('Stack Trace:', e.stack); // Tambahkan stack trace untuk detail lebih lanjut
+        console.error('Kesalahan saat memproses notifikasi:', e.message);
+        console.error('Stack Trace:', e.stack);
+        // Kirim respons 500 jika ada error
         res.status(500).send('Internal Server Error');
     }
 }
