@@ -91,6 +91,16 @@
             margin-top: 15px;
             text-align: left;
         }
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -131,7 +141,9 @@
                 console.log('Respons Midtrans:', data); 
 
                 if (response.ok && data.status_code === '201') {
-                    const qrImageUrl = data.actions.find(action => action.name === 'generate-qr_code')?.url;
+                    // Ambil URL gambar QR yang benar dari properti actions
+                    const qrAction = data.actions.find(action => action.name === 'generate-qr_code');
+                    const qrImageUrl = qrAction ? qrAction.url : null;
                     const qrString = data.qr_string;
 
                     resultDiv.innerHTML = `
@@ -146,6 +158,18 @@
                         
                         <p>Selesaikan pembayaran dalam 15 menit.</p>
                     `;
+
+                    // Simulasi tampilan sukses
+                    // Ini hanya contoh. Implementasi sebenarnya harus menggunakan Webhooks.
+                    setTimeout(() => {
+                        resultDiv.innerHTML = `
+                            <div class="success-message">
+                                🎉 Pembayaran Berhasil! <br>
+                                Terima kasih atas pembayaran Anda.
+                            </div>
+                        `;
+                        document.getElementById('paymentForm').style.display = 'none'; // Sembunyikan form setelah sukses
+                    }, 5000); // Tampilan sukses muncul setelah 5 detik
                 } else {
                     resultDiv.innerHTML = `<p class="error">Gagal membuat transaksi: ${data.status_message || 'Terjadi kesalahan'}</p>`;
                 }
