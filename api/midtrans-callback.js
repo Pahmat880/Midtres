@@ -3,9 +3,9 @@
 const midtransClient = require('midtrans-client');
 require('dotenv').config();
 
-// Konfigurasi Midtrans
+// Gunakan CoreApi untuk menangani notifikasi dari Midtrans
 const core = new midtransClient.CoreApi({
-    isProduction: false, // Ubah ke true untuk Production
+    isProduction: false, // Ubah ke true untuk mode Production
     serverKey: process.env.MIDTRANS_SERVER_KEY,
 });
 
@@ -15,17 +15,16 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Gunakan objek `core` untuk menangani notifikasi
+        // Objek `core.notifications` yang memiliki metode `handle`
         const statusResponse = await core.notifications.handle(req.body);
         const orderId = statusResponse.order_id;
         const transactionStatus = statusResponse.transaction_status;
         
         console.log(`Webhook diterima untuk Order ID: ${orderId}, Status: ${transactionStatus}`);
         
-        // Di sini Anda bisa menambahkan logika untuk memperbarui status pesanan di database Anda
-        // Contoh:
+        // Di sini Anda bisa menambahkan logika untuk memperbarui status pesanan di database
         // if (transactionStatus == 'settlement' || transactionStatus == 'capture') {
-        //   console.log('Pembayaran berhasil!');
+        //   // Lakukan sesuatu ketika pembayaran berhasil
         // }
         
         res.status(200).send('OK');
