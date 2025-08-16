@@ -1,5 +1,3 @@
-// api/midtrans-callback.js
-
 const midtransClient = require('midtrans-client');
 require('dotenv').config();
 
@@ -10,7 +8,8 @@ const core = new midtransClient.CoreApi({
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
-        return res.status(405).end('Method Not Allowed');
+        console.error('Metode HTTP tidak diizinkan. Gunakan POST.');
+        return res.status(405).send('Method Not Allowed');
     }
 
     try {
@@ -18,7 +17,7 @@ export default async function handler(req, res) {
         console.log('Request Body:', req.body);
 
         if (!req.body || Object.keys(req.body).length === 0) {
-            console.error('Webhook payload is empty or undefined.');
+            console.error('Payload webhook kosong.');
             return res.status(400).send('Bad Request: Empty payload');
         }
 
@@ -27,14 +26,19 @@ export default async function handler(req, res) {
         console.log('Webhook berhasil diproses.');
         console.log('Status Transaksi:', statusResponse.transaction_status);
         
-        // --- Perbaikan di sini ---
-        // Midtrans mengharapkan respons status 200 dengan body "OK"
         res.status(200).send('OK');
 
     } catch (e) {
-        console.error('Kesalahan saat memproses notifikasi:', e.message);
-        console.error('Stack Trace:', e.stack);
-        // Kirim respons 500 jika ada error
+        // Log pesan kesalahan yang sangat detail
+        console.error('Kesalahan saat memproses notifikasi: ', e.message);
+        console.error('Tipe Error: ', e.name);
+        console.error('Data Lengkap Error: ', e);
+
+        // Jika error berasal dari Midtrans, tampilkan pesannya
+        if (e.ApiResponse) {
+            console.error('Pesan dari Midtrans:', e.ApiResponse.status_message);
+        }
+
         res.status(500).send('Internal Server Error');
     }
 }
