@@ -1,0 +1,21 @@
+{
+  "name": "qris-midtrans",
+  "version": "1.0.0",
+  "description": "Simple QRIS payment using Midtrans and Vercel Serverless Functions.",
+  "main": "api/create-qris.js",
+  "scripts": {
+    "start": "vercel dev"
+  },
+  "keywords": [
+    "midtrans",
+    "qris",
+    "vercel",
+    "serverless"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "midtrans-client": "^1.3.1"
+  }
+}
