@@ -4,9 +4,9 @@ const midtransClient = require('midtrans-client');
 require('dotenv').config();
 
 // Konfigurasi Midtrans
-const snap = new midtransClient.Snap({
-    isProduction: false,
-    serverKey: process.env.MIDTRANS_SERVER_KEY
+const core = new midtransClient.CoreApi({
+    isProduction: false, // Ubah ke true untuk Production
+    serverKey: process.env.MIDTRANS_SERVER_KEY,
 });
 
 export default async function handler(req, res) {
@@ -15,7 +15,8 @@ export default async function handler(req, res) {
     }
 
     try {
-        const statusResponse = await snap.notifications.handle(req.body);
+        // Gunakan objek `core` untuk menangani notifikasi
+        const statusResponse = await core.notifications.handle(req.body);
         const orderId = statusResponse.order_id;
         const transactionStatus = statusResponse.transaction_status;
         
@@ -23,11 +24,8 @@ export default async function handler(req, res) {
         
         // Di sini Anda bisa menambahkan logika untuk memperbarui status pesanan di database Anda
         // Contoh:
-        // if (transactionStatus == 'capture' || transactionStatus == 'settlement') {
+        // if (transactionStatus == 'settlement' || transactionStatus == 'capture') {
         //   console.log('Pembayaran berhasil!');
-        //   // Logika untuk mengirim notifikasi ke frontend atau memperbarui database
-        // } else if (transactionStatus == 'cancel' || transactionStatus == 'deny' || transactionStatus == 'expire') {
-        //   console.log('Pembayaran gagal atau kedaluwarsa.');
         // }
         
         res.status(200).send('OK');
