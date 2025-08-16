@@ -75,6 +75,7 @@
         #result p {
             color: #555;
             font-size: 14px;
+            word-wrap: break-word; 
         }
         #result p.error {
             color: #d9534f;
@@ -82,6 +83,13 @@
             border-color: #ebccd1;
             padding: 10px;
             border-radius: 4px;
+        }
+        .info-box {
+            background-color: #e9e9e9;
+            border-radius: 4px;
+            padding: 10px;
+            margin-top: 15px;
+            text-align: left;
         }
     </style>
 </head>
@@ -111,7 +119,6 @@
             resultDiv.innerHTML = '<p>Membuat transaksi...</p>';
 
             try {
-                // Panggilan ke serverless function di endpoint /api/create-qris
                 const response = await fetch('/api/create-qris', {
                     method: 'POST',
                     headers: {
@@ -121,11 +128,22 @@
                 });
 
                 const data = await response.json();
+                console.log('Respons Midtrans:', data); 
 
                 if (response.ok && data.status_code === '201') {
+                    const qrImageUrl = data.actions.find(action => action.name === 'generate-qr_code')?.url;
+                    const qrString = data.qr_string;
+
                     resultDiv.innerHTML = `
                         <h4>Silakan Scan QR Code ini</h4>
-                        <img src="${data.actions?.[0]?.url}" alt="Kode QRIS">
+                        ${qrImageUrl ? `<img src="${qrImageUrl}" alt="Kode QRIS">` : '<p class="error">Gambar QR tidak ditemukan.</p>'}
+                        
+                        <div class="info-box">
+                            <p><strong>QRIS Data String (MPM):</strong></p>
+                            <p>${qrString || 'Tidak tersedia'}</p>
+                            <p>Salin teks ini untuk simulasi pembayaran di <a href="https://simulator.sandbox.midtrans.com/" target="_blank">Midtrans QRIS Simulator</a>.</p>
+                        </div>
+                        
                         <p>Selesaikan pembayaran dalam 15 menit.</p>
                     `;
                 } else {
