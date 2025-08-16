@@ -101,6 +101,13 @@
             font-size: 1.2em;
             font-weight: bold;
         }
+        .check-status-button {
+            background-color: #007bff;
+            margin-top: 10px;
+        }
+        .check-status-button:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
@@ -119,6 +126,38 @@
     </div>
 
     <script>
+        // Fungsi untuk memeriksa status pembayaran
+        async function checkPaymentStatus(orderId) {
+            const resultDiv = document.getElementById('result');
+            const checkUrl = `/api/check-status?orderId=${orderId}`;
+
+            try {
+                const response = await fetch(checkUrl);
+                const data = await response.json();
+                
+                console.log('Status transaksi:', data.transaction_status);
+
+                if (data.transaction_status === 'settlement' || data.transaction_status === 'capture') {
+                    resultDiv.innerHTML = `
+                        <div class="success-message">
+                            🎉 Pembayaran Berhasil! <br>
+                            Terima kasih atas pembayaran Anda.
+                        </div>
+                    `;
+                    document.getElementById('paymentForm').style.display = 'none';
+                    document.getElementById('checkStatusBtn').style.display = 'none'; // Sembunyikan tombol
+                } else if (data.transaction_status === 'pending') {
+                    alert('Status pembayaran masih menunggu. Silakan coba lagi sebentar.');
+                } else {
+                    alert('Pembayaran gagal atau kedaluwarsa.');
+                }
+
+            } catch (error) {
+                console.error("Error checking status:", error);
+                alert('Terjadi kesalahan saat memeriksa status.');
+            }
+        }
+
         document.getElementById('paymentForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -141,7 +180,6 @@
                 console.log('Respons Midtrans:', data); 
 
                 if (response.ok && data.status_code === '201') {
-                    // Ambil URL gambar QR yang benar dari properti actions
                     const qrAction = data.actions.find(action => action.name === 'generate-qr_code');
                     const qrImageUrl = qrAction ? qrAction.url : null;
                     const qrString = data.qr_string;
@@ -157,19 +195,14 @@
                         </div>
                         
                         <p>Selesaikan pembayaran dalam 15 menit.</p>
+                        <button id="checkStatusBtn" class="check-status-button">Cek Status Pembayaran</button>
                     `;
+                    
+                    // Tambahkan event listener untuk tombol cek status
+                    document.getElementById('checkStatusBtn').addEventListener('click', () => {
+                        checkPaymentStatus(orderId);
+                    });
 
-                    // Simulasi tampilan sukses
-                    // Ini hanya contoh. Implementasi sebenarnya harus menggunakan Webhooks.
-                    setTimeout(() => {
-                        resultDiv.innerHTML = `
-                            <div class="success-message">
-                                🎉 Pembayaran Berhasil! <br>
-                                Terima kasih atas pembayaran Anda.
-                            </div>
-                        `;
-                        document.getElementById('paymentForm').style.display = 'none'; // Sembunyikan form setelah sukses
-                    }, 5000); // Tampilan sukses muncul setelah 5 detik
                 } else {
                     resultDiv.innerHTML = `<p class="error">Gagal membuat transaksi: ${data.status_message || 'Terjadi kesalahan'}</p>`;
                 }
